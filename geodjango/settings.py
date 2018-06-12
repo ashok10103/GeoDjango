@@ -126,6 +126,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR,'static'),
+)
+
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER':(10.9960612,76.9677666),
     'DEFAULT_ZOOM':12,
