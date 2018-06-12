@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'location'
+    'django.contrib.gis',
+    'leaflet',
+    'location',
 ]
 
 MIDDLEWARE = [
@@ -76,8 +78,12 @@ WSGI_APPLICATION = 'geodjango.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'locationmapping',
+        'USER': "postgisadmin",
+        'PASSWORD': "ashok",
+        'HOST':'localhost',
+        'PORT':'5432',
     }
 }
 
@@ -119,3 +125,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER':(10.9960612,76.9677666),
+    'DEFAULT_ZOOM':12,
+    'MIN_ZOOM':2,
+    'MAX_ZOOM':20,
+    'SCALE':'metric',
+    'ATTRIBUTION_PREFIX':'Powered by Desmoslab Pvt ltd',
+}
