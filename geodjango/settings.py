@@ -25,7 +25,7 @@ SECRET_KEY = '%izi($*eod_c487o&=&i$+b*dae3g3_#!5j7n3(rnj!)0byisb'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition

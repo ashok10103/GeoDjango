@@ -20,42 +20,50 @@
     <h1>GeoDjango</h1>
     <br />
 
-    <label for="">Latitude</label>
-    <input type="number" name="latitude" id="lat" step="any">
+    <label for="latitude">Latitude</label>
+    <input type="number" name="latitude" id="latitude" step="any">
     <br />
-    <label for="">Longitude</label>
-    <input type="number" name="longitude" id="lon" step="any">
+    <label for="longitude">Longitude</label>
+    <input type="number" name="longitude" id="longitude" step="any">
     <br />
-    <label for="">Radius</label>
-    <input type="number" name="radius" id="rad" step="any">
+    <label for="radius">Radius</label>
+    <input type="number" name="radius" id="radius" step="any">
     <br/>
     <button type="submit" onclick="myFunction()">Submit</button>
 
 
     <script type="text/javascript">
+    let csrftoken = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+    // console.log(csrftoken)
     function myFunction(){
-      lat= document.getElementById('lat').value
-      lon=document.getElementById('lon').value
-      rad=document.getElementById('rad').value
-      
-      $.post({
-        url:'http://localhost:8000/data/',
+      lat= document.getElementById('latitude').value
+      lon=document.getElementById('longitude').value
+      rad=document.getElementById('radius').value
+      const data={
+        latitude:lat,
+        logitude:lon,
+        radius:rad,
+        csrfmiddlewaretoken:  csrftoken 
+      }
+      $.ajax({
+        url: "{% url 'data' %}" + "?latitude="+lat+"&longitude="+lon+"&radius="+rad,
         type: 'POST',
         dataType: 'json',
+        headers: { "X-CSRFToken": csrftoken},
         contentType: 'application/json;charset=utf-8',  
-        data:{
-            latitude:lat,
-            logitude:lon,
-            radius:rad,
-            csrfmiddlewaretoken: '{{ csrf_token }}'
-        },     
-        success:function(data){
-            console.log(data)
+        data:  {
+            name:'ashok'
+        },      
+       
+        success:function(response){
+            response.features.map(a=>{
+                datasets = a.properties.name
+
+               
+            })
         },
         
-    })
-        
-      
+    })     
     }
    
 
@@ -65,34 +73,14 @@
                     point.bindPopup(feature.properties.name.toString());
                 }
             })
-            // console.log(datasets)
+          
             datasets.addTo(map)
 
         }
 
-    //  var data = new L.GeoJSON.AJAX('http://localhost:8000/data/',function(res){
-    //      console.log(res)
-    //  })
-    
-    
-    // function getReverseGeoCode(keyword) {
-    //     ajaxservicetore
-    //     success {
-    //         getlong
-    //         getNearByClinics();
-    //     }
-    // }    
-    // function getNearByClinics(lat, long) {
-    //     ajax.aldlfja
-    //     success : {
-    //         L.c
-    //         for (clinic in data) {
-    //             L.marker([clinic.lat, clinic.lon]).addTo(mymap);
-    //         }
-    //     }
-    // }
+  
     </script>
-    {% leaflet_map "gis" callback="window.layers" %}
+    {% leaflet_map "gis"  %}
 
 </body>
 
