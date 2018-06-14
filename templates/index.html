@@ -1,33 +1,99 @@
 <!DOCTYPE html>
 <html>
-    {% load static %}
-    {% load leaflet_tags %}
-    <head>
-        {% leaflet_js %}
-        {% leaflet_css %}
+{% load static %} {% load leaflet_tags %}
+
+<head>
+    
+    {% leaflet_js %} {% leaflet_css %}
+    
+    <title>Welcome</title>
+    <style>
+        div#gis {
+            height: 500px;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="{% static 'dist/leaflet.ajax.js' %}"></script>
+</head>
+
+<body>
+    <h1>GeoDjango</h1>
+    <br />
+
+    <label for="">Latitude</label>
+    <input type="number" name="latitude" id="lat" step="any">
+    <br />
+    <label for="">Longitude</label>
+    <input type="number" name="longitude" id="lon" step="any">
+    <br />
+    <label for="">Radius</label>
+    <input type="number" name="radius" id="rad" step="any">
+    <br/>
+    <button type="submit" onclick="myFunction()">Submit</button>
+
+
+    <script type="text/javascript">
+    function myFunction(){
+      lat= document.getElementById('lat').value
+      lon=document.getElementById('lon').value
+      rad=document.getElementById('rad').value
+      
+      $.post({
+        url:'http://localhost:8000/data/',
+        type: 'POST',
+        dataType: 'json',
+        contentType: 'application/json;charset=utf-8',  
+        data:{
+            latitude:lat,
+            logitude:lon,
+            radius:rad,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },     
+        success:function(data){
+            console.log(data)
+        },
         
-        <title>Welcome</title>
-        <style>
-            div#gis {
-    height: 500px;
-}
-        </style>
-        <script type = "text/javascript" src="{% static 'dist/leaflet.ajax.js' %}"></script>
-    </head>
-    <body>
-        <h1>GeoDjango</h1>
-        <br />
-       
-        <script type="text/javascript"> 
-            function layers(map,options){
-                var datasets = new L.GeoJSON.AJAX("{% url 'data' %}",{
+    })
+        
+      
+    }
+   
 
-                }) 
-                datasets.addTo(map)
-              
-            }
-        </script>
+        function layers(map, options) {
+            var datasets = new L.GeoJSON.AJAX("{% url 'data' %}", {
+                onEachFeature: function (feature, point) {
+                    point.bindPopup(feature.properties.name.toString());
+                }
+            })
+            // console.log(datasets)
+            datasets.addTo(map)
 
-{% leaflet_map "gis" callback="window.layers" %}
-    </body>
+        }
+
+    //  var data = new L.GeoJSON.AJAX('http://localhost:8000/data/',function(res){
+    //      console.log(res)
+    //  })
+    
+    
+    // function getReverseGeoCode(keyword) {
+    //     ajaxservicetore
+    //     success {
+    //         getlong
+    //         getNearByClinics();
+    //     }
+    // }    
+    // function getNearByClinics(lat, long) {
+    //     ajax.aldlfja
+    //     success : {
+    //         L.c
+    //         for (clinic in data) {
+    //             L.marker([clinic.lat, clinic.lon]).addTo(mymap);
+    //         }
+    //     }
+    // }
+    </script>
+    {% leaflet_map "gis" callback="window.layers" %}
+
+</body>
+
 </html>
