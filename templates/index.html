@@ -1,87 +1,87 @@
 <!DOCTYPE html>
 <html>
-{% load static %} {% load leaflet_tags %}
-
-<head>
-    
-    {% leaflet_js %} {% leaflet_css %}
-    
-    <title>Welcome</title>
-    <style>
+    {% load static %} {% load leaflet_tags %}
+    <head>
+        {% leaflet_js %} {% leaflet_css %}
+        <title>Welcome</title>
+        <style>
         div#gis {
             height: 500px;
         }
-    </style>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script type="text/javascript" src="{% static 'dist/leaflet.ajax.js' %}"></script>
-</head>
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type="text/javascript" src="{% static 'dist/leaflet.ajax.js' %}"></script>
+    </head>
+    <body>
+        <h1>GeoDjango</h1>
+        <br />
+        {% csrf_token %}
+        <label for="latitude">Latitude</label>
+        <input type="number" name="latitude" id="latitude" step="any">
+        <br />
+        <label for="longitude">Longitude</label>
+        <input type="number" name="longitude" id="longitude" step="any">
+        <br />
+        <label for="radius">Radius</label>
+        <input type="number" name="radius" id="radius" step="any">
+        <br/>
+        <button type="submit" onclick="myFunction()">Submit</button>
 
-<body>
-    <h1>GeoDjango</h1>
-    <br />
+            
 
-    <label for="latitude">Latitude</label>
-    <input type="number" name="latitude" id="latitude" step="any">
-    <br />
-    <label for="longitude">Longitude</label>
-    <input type="number" name="longitude" id="longitude" step="any">
-    <br />
-    <label for="radius">Radius</label>
-    <input type="number" name="radius" id="radius" step="any">
-    <br/>
-    <button type="submit" onclick="myFunction()">Submit</button>
+    <script type="text/javascript">   
+        var mymap;  
+        window.addEventListener("map:init", function (e) {
+                 var detail = e.detail;
+                 mymap = detail
+                           
+                // L.marker([10.9532, 76.952]).addTo(detail.map);           
 
+        }, false); 
+        
+        
+    function myFunction(){        
 
-    <script type="text/javascript">
-    let csrftoken = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-    // console.log(csrftoken)
-    function myFunction(){
       lat= document.getElementById('latitude').value
       lon=document.getElementById('longitude').value
       rad=document.getElementById('radius').value
-      const data={
-        latitude:lat,
-        logitude:lon,
-        radius:rad,
-        csrfmiddlewaretoken:  csrftoken 
-      }
+      let csrftoken = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");      
+     
       $.ajax({
         url: "{% url 'data' %}" + "?latitude="+lat+"&longitude="+lon+"&radius="+rad,
         type: 'POST',
         dataType: 'json',
         headers: { "X-CSRFToken": csrftoken},
-        contentType: 'application/json;charset=utf-8',  
-        data:  {
-            name:'ashok'
-        },      
+        contentType: 'application/json;charset=utf-8',          
        
-        success:function(response){
-            response.features.map(a=>{
-                datasets = a.properties.name
-
-               
+        success:function(response){           
+            response.features.map((map)=>{              
+                Lat = map.geometry.coordinates[1]  
+                Lon = map.geometry.coordinates[0]
+                console.log(Lat,Lon)               
+                console.log(mymap)
+                L.marker([Lat,Lon]).addTo(mymap.map)                
             })
         },
         
     })     
-    }
-   
-
-        function layers(map, options) {
-            var datasets = new L.GeoJSON.AJAX("{% url 'data' %}", {
-                onEachFeature: function (feature, point) {
-                    point.bindPopup(feature.properties.name.toString());
-                }
-            })
+    }      
+        // function layers(map, options) {
+       
+        //     var datasets = new L.GeoJSON.AJAX("{% url 'data' %}", {
+        //         onEachFeature: function (feature, layer) {
+        //             layer.bindPopup(feature.properties.name.toString());
+        //         }
+        //     })
           
-            datasets.addTo(map)
+        //     datasets.addTo(map)
+        //     L.marker([ 10.9902127,76.96286580000003]).addTo(map)
+        // }
+        
+            </script>
+            {% leaflet_map "gis"  %}
+            <!-- callback="window.layers" -->
 
-        }
+        </body>
 
-  
-    </script>
-    {% leaflet_map "gis"  %}
-
-</body>
-
-</html>
+    </html>
