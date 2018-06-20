@@ -16,68 +16,75 @@
         <h1>GeoDjango</h1>
         <br />
         {% csrf_token %}
-        <label for="latitude">Latitude</label>
-        <input type="number" name="latitude" id="latitude" step="any">
-        <br />
-        <label for="longitude">Longitude</label>
-        <input type="number" name="longitude" id="longitude" step="any">
-        <br />
+        <label for="address">Address</label>
+        <input type="text" name="address" id="address">
+        <br/>
         <label for="radius">Radius</label>
         <input type="number" name="radius" id="radius" step="any">
         <br/>
-        <button type="submit" onclick="myFunction()">Submit</button>
-
+        <button type="submit" onclick="getData()">Submit</button>
+        <br>
             
 
     <script type="text/javascript">   
         var mymap;  
-        window.addEventListener("map:init", function (e) {
+       
+       window.addEventListener("map:init", function (e) {
                  var detail = e.detail;
-                 mymap = detail
-                           
-                // L.marker([10.9532, 76.952]).addTo(detail.map);           
+                 mymap = detail  
+        //          if(mymap){
+        //     L.Control.geocoder().addTo(mymap.map);
+        //     var geocoder = L.Control.geocoder().on('markgeocode', function(event) {                
+        //         var center = event.geocode.center;
+        //         L.marker(center).addTo(mymap.map);
+        //     }).addTo(mymap.map);
+
+        // }       
 
         }, false); 
         
+    function getData(){
+        address = document.getElementById('address').value 
+        $.ajax({
+          url:`https://maps.googleapis.com/maps/api/geocode/json?address={${address}}&key=AIzaSyBsWAX9Qnw00FuKFHFhFLePluscku_fU3I`,
+          type:`GET`,              
+          contentType: 'application/json;charset=utf-8',  
+          success:function(response){
+              lat = response.results[0].geometry.location.lat
+              lon=  response.results[0].geometry.location.lng 
+              rad=document.getElementById('radius').value   
+              drawMap(lat,lon)
+          }        
+      })
+      
+    }
         
-    function myFunction(){        
-
-      lat= document.getElementById('latitude').value
-      lon=document.getElementById('longitude').value
-      rad=document.getElementById('radius').value
-      let csrftoken = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");      
-     
+        
+    function drawMap(latitude,longitude,radius){  
+       
+    let csrftoken = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");  
+    console.log(csrftoken)    
+    lat= latitude
+    lon=longitude     
+    rad=radius
       $.ajax({
         url: "{% url 'data' %}" + "?latitude="+lat+"&longitude="+lon+"&radius="+rad,
         type: 'POST',
         dataType: 'json',
         headers: { "X-CSRFToken": csrftoken},
-        contentType: 'application/json;charset=utf-8',          
-       
+        contentType: 'application/json;charset=utf-8',      
         success:function(response){           
             response.features.map((map)=>{              
                 Lat = map.geometry.coordinates[1]  
                 Lon = map.geometry.coordinates[0]
-                console.log(Lat,Lon)               
-                console.log(mymap)
-                L.marker([Lat,Lon]).addTo(mymap.map)                
+                L.marker([Lat,Lon]).addTo(mymap.map)             
+                       
             })
         },
         
     })     
     }      
-        // function layers(map, options) {
        
-        //     var datasets = new L.GeoJSON.AJAX("{% url 'data' %}", {
-        //         onEachFeature: function (feature, layer) {
-        //             layer.bindPopup(feature.properties.name.toString());
-        //         }
-        //     })
-          
-        //     datasets.addTo(map)
-        //     L.marker([ 10.9902127,76.96286580000003]).addTo(map)
-        // }
-        
             </script>
             {% leaflet_map "gis"  %}
             <!-- callback="window.layers" -->
