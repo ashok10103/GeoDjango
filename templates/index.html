@@ -1,94 +1,137 @@
 <!DOCTYPE html>
 <html>
-    {% load static %} {% load leaflet_tags %}
-    <head>
-        {% leaflet_js %} {% leaflet_css %}
-        <title>Welcome</title>
-        <style>
+{% load static %} {% load leaflet_tags %}
+
+<head>
+    {% leaflet_js %} {% leaflet_css %}
+    <title>Welcome</title>
+    <style>
+        .input-container {
+            text-align: center;
+        }
+
         div#gis {
             height: 500px;
+            margin: 20px;
         }
-        </style>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script type="text/javascript" src="{% static 'dist/leaflet.ajax.js' %}"></script>
-    </head>
-    <body>
-        <h1>GeoDjango</h1>
-        <br />
-        {% csrf_token %}
-        <label for="address">Address</label>
-        <input type="text" name="address" id="address">
-        <br/>
-        <label for="radius">Radius</label>
-        <input type="number" name="radius" id="radius" step="any">
-        <br/>
-        <button type="submit" onclick="getData()">Submit</button>
-        <br>
-            
 
-    <script type="text/javascript">   
-        var mymap;  
-       
-       window.addEventListener("map:init", function (e) {
-                 var detail = e.detail;
-                 mymap = detail  
-        //          if(mymap){
-        //     L.Control.geocoder().addTo(mymap.map);
-        //     var geocoder = L.Control.geocoder().on('markgeocode', function(event) {                
-        //         var center = event.geocode.center;
-        //         L.marker(center).addTo(mymap.map);
-        //     }).addTo(mymap.map);
+        input {
+            box-sizing: border-box;
+            border: 1px solid transparent;
+            width: 270px;
+            height: 37px;
+            padding: 0 12px;
+            border-radius: 3px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            font-size: 14px;
+            outline: none;
+            text-overflow: ellipses;
+        }
 
-        // }       
+        .suggesstionList {
+            position: absolute;
+            top: 37px;
+            left: 0;
+            z-index: 1000;
+            width: 100%;
+            background-color: #fff;
+            margin: 0;
+            padding: 0;
+            /* overflow-y: auto; */
+            /* height: 200px; */
+            border: 1px solid transparent;
+            border-radius: 2px;
+            display: inline;
+        }
 
-        }, false); 
-        
-    function getData(){
-        address = document.getElementById('address').value 
-        $.ajax({
-          url:`https://maps.googleapis.com/maps/api/geocode/json?address={${address}}&key=AIzaSyBsWAX9Qnw00FuKFHFhFLePluscku_fU3I`,
-          type:`GET`,              
-          contentType: 'application/json;charset=utf-8',  
-          success:function(response){
-              lat = response.results[0].geometry.location.lat
-              lon=  response.results[0].geometry.location.lng 
-              rad=document.getElementById('radius').value   
-              drawMap(lat,lon)
-          }        
-      })
-      
-    }
-        
-        
-    function drawMap(latitude,longitude,radius){  
-       
-    let csrftoken = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");  
-    console.log(csrftoken)    
-    lat= latitude
-    lon=longitude     
-    rad=radius
-      $.ajax({
-        url: "{% url 'data' %}" + "?latitude="+lat+"&longitude="+lon+"&radius="+rad,
-        type: 'POST',
-        dataType: 'json',
-        headers: { "X-CSRFToken": csrftoken},
-        contentType: 'application/json;charset=utf-8',      
-        success:function(response){           
-            response.features.map((map)=>{              
-                Lat = map.geometry.coordinates[1]  
-                Lon = map.geometry.coordinates[0]
-                L.marker([Lat,Lon]).addTo(mymap.map)             
-                       
+        .suggesstionList li {
+            padding: 6px 10px;
+            list-style-type: none;
+            cursor: pointer;
+            width: 100%;
+            border-bottom: 1px solid #e2e2e2;
+
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="{% static 'dist/leaflet.ajax.js' %}"></script>
+</head>
+
+<body>
+
+    <br /> {% csrf_token %}
+    <div class="input-container">
+        <input type="text" name="address" id="address" placeholder="enter your address" onchange="getLocation(this.value)" />
+        <!-- <input type="number" name="radius" id="radius" step="any" placeholder="enter radius"> -->
+        <ul class="suggesstionList"></ul>
+
+    </div>
+
+
+    <script type="text/javascript">
+        let mymap;
+        let add;
+        window.addEventListener("map:init", function (e) {
+            var detail = e.detail;
+            mymap = detail
+        }, false);
+
+        function getData(addr) {
+            address = addr
+            $.ajax({
+                url: `https://maps.googleapis.com/maps/api/geocode/json?address={${address}}&key=AIzaSyBsWAX9Qnw00FuKFHFhFLePluscku_fU3I`,
+                type: `GET`,
+                contentType: 'application/json;charset=utf-8',
+                success: function (response) {
+                    lat = response.results[0].geometry.location.lat
+                    lon = response.results[0].geometry.location.lng
+                    addr = response.results
+                    // document.getElementsByClassName("suggesstionList").innerHTML = addr;
+                    console.log(lat, lon, addr)
+                    add = addr
+                    if (lat && lon)
+                        drawMap(lat, lon)
+                }
             })
-        },
-        
-    })     
-    }      
-       
-            </script>
-            {% leaflet_map "gis"  %}
-            <!-- callback="window.layers" -->
 
-        </body>
+        }
 
-    </html>
+
+        function drawMap(latitude, longitude) {
+
+            let csrftoken = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+            console.log(csrftoken)
+            lat = latitude
+            lon = longitude
+            rad = 7
+            $.ajax({
+                url: "{% url 'data' %}" + "?latitude=" + lat + "&longitude=" + lon + "&radius=" + rad,
+                type: 'POST',
+                dataType: 'json',
+                headers: {
+                    "X-CSRFToken": csrftoken
+                },
+                contentType: 'application/json;charset=utf-8',
+                success: function (response) {
+                    response.features.map((map) => {
+                        Lat = map.geometry.coordinates[1]
+                        Lon = map.geometry.coordinates[0]
+                        L.marker([Lat, Lon],{draggable:'true'}).addTo(mymap.map)
+                    })
+                },
+
+            })
+        }
+
+        function getLocation(key) {
+            keyword = key
+            getData(keyword)
+
+        }
+    </script>
+    {% leaflet_map "gis" %}
+    <!-- callback="window.layers" -->
+
+</body>
+
+</html>
