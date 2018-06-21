@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
-{% load static %} {% load leaflet_tags %}
+    {% load static %} {% load leaflet_tags %}
 
-<head>
-    {% leaflet_js %} {% leaflet_css %}
-    <title>Welcome</title>
-    <style>
+    <head>
+        {% leaflet_js %} {% leaflet_css %}
+        <title>Welcome</title>
+        <style>
         .input-container {
             text-align: center;
         }
@@ -26,51 +26,24 @@
             font-size: 14px;
             outline: none;
             text-overflow: ellipses;
-        }
-
-        .suggesstionList {
-            position: absolute;
-            top: 37px;
-            left: 0;
-            z-index: 1000;
-            width: 100%;
-            background-color: #fff;
-            margin: 0;
-            padding: 0;
-            /* overflow-y: auto; */
-            /* height: 200px; */
-            border: 1px solid transparent;
-            border-radius: 2px;
-            display: inline;
-        }
-
-        .suggesstionList li {
-            padding: 6px 10px;
-            list-style-type: none;
-            cursor: pointer;
-            width: 100%;
-            border-bottom: 1px solid #e2e2e2;
-
-        }
-    </style>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script type="text/javascript" src="{% static 'dist/leaflet.ajax.js' %}"></script>
-</head>
-
-<body>
-
-    <br /> {% csrf_token %}
-    <div class="input-container">
-        <input type="text" name="address" id="address" placeholder="enter your address" onchange="getLocation(this.value)" />
-        <!-- <input type="number" name="radius" id="radius" step="any" placeholder="enter radius"> -->
-        <ul class="suggesstionList"></ul>
-
-    </div>
-
-
-    <script type="text/javascript">
+        }     
+        </style>
+        <script
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCkZ9OBTQXV_tgDqR3N5p8LqBTLfelDY1E&libraries=places"></script>
+        <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type="text/javascript" src="{% static 'dist/leaflet.ajax.js' %}"></script>
+    </head>
+    <body>
+        <br /> {% csrf_token %}
+        <div class="input-container">
+            <input type="text" name="address" id="address" placeholder="enter your address" oninput="getLocation()" />
+            <!-- <input type="number" name="radius" id="radius" step="any"
+                placeholder="enter radius"> -->            
+        </div>
+        <script type="text/javascript">
         let mymap;
-        let add;
+        let add;             
         window.addEventListener("map:init", function (e) {
             var detail = e.detail;
             mymap = detail
@@ -81,24 +54,25 @@
             $.ajax({
                 url: `https://maps.googleapis.com/maps/api/geocode/json?address={${address}}&key=AIzaSyBsWAX9Qnw00FuKFHFhFLePluscku_fU3I`,
                 type: `GET`,
+                headers:{
+                    "Access-Control-Allow-Origin":'*',
+                    "Access-Control-Allow-Credentials": "true"                   
+            },
                 contentType: 'application/json;charset=utf-8',
                 success: function (response) {
                     lat = response.results[0].geometry.location.lat
                     lon = response.results[0].geometry.location.lng
-                    addr = response.results
-                    // document.getElementsByClassName("suggesstionList").innerHTML = addr;
+                    addr = response.results[0].formatted_address
                     console.log(lat, lon, addr)
                     add = addr
                     if (lat && lon)
                         drawMap(lat, lon)
                 }
-            })
+            })        
 
         }
 
-
         function drawMap(latitude, longitude) {
-
             let csrftoken = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
             console.log(csrftoken)
             lat = latitude
@@ -123,15 +97,19 @@
             })
         }
 
-        function getLocation(key) {
-            keyword = key
-            getData(keyword)
-
+        function getLocation() {          
+            input = document.getElementById('address')
+            var autocomplete = new google.maps.places.Autocomplete(input);
+            autocomplete.addListener('place_changed', function() {         
+            var place = autocomplete.getPlace();
+            addr=place.formatted_address           
+            if(addr)
+                getData(addr)
+            })
         }
-    </script>
-    {% leaflet_map "gis" %}
-    <!-- callback="window.layers" -->
+        </script>
 
-</body>
-
+        {% leaflet_map "gis" %}
+        <!-- callback="window.layers" -->       
+    </body>
 </html>
