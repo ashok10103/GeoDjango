@@ -73,7 +73,6 @@
         }
 
         function drawMap(latitude, longitude) {
-
             let csrftoken = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
             console.log(csrftoken)
             lat = latitude
@@ -98,25 +97,19 @@
             })
         }
 
-        function getLocation() {
-          
+        function getLocation() {          
             input = document.getElementById('address')
             var autocomplete = new google.maps.places.Autocomplete(input);
-            autocomplete.addListener('place_changed', function() {
-         
+            autocomplete.addListener('place_changed', function() {         
             var place = autocomplete.getPlace();
-            addr=place.formatted_address
-           
+            addr=place.formatted_address           
             if(addr)
                 getData(addr)
             })
-            
-
         }
         </script>
-        {% leaflet_map "gis" %}
-        <!-- callback="window.layers" -->
-       
-    </body>
 
+        {% leaflet_map "gis" %}
+        <!-- callback="window.layers" -->       
+    </body>
 </html>
